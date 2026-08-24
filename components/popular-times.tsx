@@ -63,7 +63,16 @@ export function PopularTimes({
           />
         </Field>
 
-        <div className="sh-popular__chart">
+        {/* The chart is wider than a phone, so this scrolls. A scrollable region must
+            be operable by keyboard, and needs a name once it can hold focus. The
+            visually hidden data table inside the chart covers screen readers; this
+            covers the sighted keyboard user who simply cannot reach the later hours. */}
+        <div
+          className="sh-popular__chart"
+          tabIndex={0}
+          role="region"
+          aria-label={`Popular times for ${selected.label}, by hour — scrollable`}
+        >
           <BarChart
             data={data}
             height={220}

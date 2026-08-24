@@ -8,11 +8,17 @@ import { repo, utm, vivekui } from '@/data/site'
 import { OpenStatus } from './open-status'
 import { GithubMark } from './github-mark'
 
+/**
+ * `short` is used between 48 and 64rem, where the links are an inline row but the bar
+ * is not yet wide enough for the full wording. Measured at 768px the row needed 403px
+ * of the 392 it had; the shorter label is what closes that gap without dropping a
+ * destination or squeezing every link's text.
+ */
 const links = [
   { href: '/', label: 'Home' },
   { href: '/menu', label: 'Menu' },
   { href: '/reserve', label: 'Reserve' },
-  { href: '/built-with', label: 'Built with VivekUI' },
+  { href: '/built-with', label: 'Built with VivekUI', short: 'Built with' },
 ]
 
 /**
@@ -43,7 +49,16 @@ export function SiteNavbar() {
       <Navbar.Links aria-label="Main">
         {links.map((link) => (
           <Navbar.Link key={link.href} asChild active={pathname === link.href}>
-            <Link href={link.href}>{link.label}</Link>
+            <Link href={link.href}>
+              {link.short ? (
+                <>
+                  <span className="sh-navlink__long">{link.label}</span>
+                  <span className="sh-navlink__short">{link.short}</span>
+                </>
+              ) : (
+                link.label
+              )}
+            </Link>
           </Navbar.Link>
         ))}
 
@@ -57,7 +72,10 @@ export function SiteNavbar() {
             className="sh-navbar__promo"
           >
             <Badge variant="soft" tone="primary" pill size="sm">
-              ⚡ Built with VivekUI
+              {/* Same two-label trick as the CTA: between 48 and 64rem the links are
+                  an inline row and the full wording does not fit beside them. */}
+              <span className="sh-promo__long">⚡ Built with VivekUI</span>
+              <span className="sh-promo__short">⚡ VivekUI</span>
             </Badge>
           </a>
         </Navbar.Link>
@@ -87,13 +105,20 @@ export function SiteNavbar() {
 
             A `Button asChild` wrapping an anchor, not an `IconButton` — IconButton has
             no `asChild`, and a link that looks like a button has to be a real `<a>` or
-            middle-click, cmd-click and "copy link address" all quietly stop working.
-            The label is visible rather than an aria-label, which is clearer for
-            everyone and needs no icon-only naming workaround. */}
+            middle-click, cmd-click and "copy link address" all quietly stop working. */}
         <Button asChild variant="ghost" size="sm" className="sh-navbar__repo">
-          <a href={repo.url} target="_blank" rel="noopener noreferrer">
+          <a
+            href={repo.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            /* The word is hidden on a narrow header, and `display: none` takes it out
+               of the accessibility tree with it — so the name is stated here instead
+               of being inferred from text that may not exist. It matches the visible
+               label where there is one, so nothing changes for a sighted user. */
+            aria-label={`${restaurant.name} on GitHub`}
+          >
             <GithubMark />
-            GitHub
+            <span className="sh-navbar__repo-text">GitHub</span>
           </a>
         </Button>
 

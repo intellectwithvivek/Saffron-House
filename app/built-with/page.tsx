@@ -96,7 +96,15 @@ export default function BuiltWithPage() {
           striped
           hoverable
           size="md"
-          containerProps={{ className: 'sh-table' }}
+          /* A scrollable region has to be operable by keyboard, and it needs a name
+             to be worth landing on. This is the W3C's recommended pattern for a wide
+             table: focusable wrapper, role=region, accessible name. */
+          containerProps={{
+            className: 'sh-table',
+            tabIndex: 0,
+            role: 'region',
+            'aria-label': 'Components used, by section — scrollable',
+          }}
         >
           <Table.Caption>
             Every section of Saffron House and the VivekUI components it is made from.
@@ -139,6 +147,8 @@ export default function BuiltWithPage() {
             ))}
           </Table.Body>
         </Table>
+
+        <p className="sh-table-hint">Scroll the table sideways to read the last column.</p>
 
         <Alert tone="success" title="The chart needed no chart library" variant="soft">
           <Text size="sm">

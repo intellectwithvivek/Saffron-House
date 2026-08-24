@@ -43,6 +43,13 @@
   --sh-saffron-soft: #f0b357;
   --sh-thread-line: #e4d3c6;
 
+  /* Saffron as TEXT, which is a different problem from saffron as ornament.
+     The ornament colour above is #e8871e, and at the 12px the eyebrow is set in it
+     measures 2.3:1 on the muted surface — well under the 4.5:1 small text needs. The
+     thread does not care, because it carries no information. The eyebrow does, so it
+     gets a burnt version dark enough to pass on every surface the site uses. */
+  --sh-saffron-text: #96500a;
+
   /* Chart palette: the popular-times bars read as one colour, not six. */
   --vk-chart-1: #be123c;
   --vk-chart-2: #e8871e;
@@ -77,6 +84,8 @@
   --sh-saffron: #f5a742;
   --sh-saffron-soft: #d98b2b;
   --sh-thread-line: #3a2e2c;
+  /* On the dark surfaces the bright tint already clears 8.9:1, so it doubles as text. */
+  --sh-saffron-text: #f5a742;
 
   --vk-chart-1: #fb7185;
   --vk-chart-2: #f5a742;
@@ -290,7 +299,7 @@
   font-weight: var(--vk-weight-semibold);
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: var(--sh-saffron);
+  color: var(--sh-saffron-text);
 }
 
 /* Small text over a photograph needs 4.5:1. Two changes get the eyebrow there: the
@@ -452,6 +461,10 @@
   font-size: var(--vk-text-lg);
   font-weight: 600;
   letter-spacing: var(--vk-tracking-snug);
+  /* A flex item defaults to `min-width: auto`, so in a 320px-wide carousel card the
+     longest dish name pushed the price out of its own row. */
+  min-inline-size: 0;
+  overflow-wrap: anywhere;
 }
 
 :where(.sh-item__body) {
@@ -722,6 +735,14 @@
    zero-specificity `display: none` and would leave the button visible on a phone
    header that has no room for it. Qualifying with the parent gives 0-2-0. */
 
+/* The brand is a flex sibling of a `flex: auto` link row, so it inherits the default
+   `flex-shrink: 1` and loses. Measured at 768px it was being compressed from its
+   natural 151px to 16px — the wordmark all but disappeared, and at 320px it was
+   clipped mid-word. It is the site's name; it does not shrink. */
+.vk-navbar .vk-navbar__brand {
+  flex: none;
+}
+
 .vk-navbar .sh-navbar__repo {
   display: none;
   gap: var(--vk-space-2);
@@ -733,6 +754,55 @@
   }
 
   .vk-navbar .sh-navbar__repo-mobile {
+    display: none;
+  }
+}
+
+/* Between 48 and 64rem the header carries the brand, four links, the badge and three
+   controls in one row. Three labels shorten to make that fit without dropping anything:
+   the CTA, the promotion badge, and the word beside the GitHub mark. */
+.vk-navbar .sh-promo__short {
+  display: none;
+}
+
+.vk-navbar .sh-navlink__short {
+  display: none;
+}
+
+/* The last four pixels.
+
+   At 768px the row still needed 377px against the 373 it was given, which squeezed
+   every link by a few px. Rather than cut a fifth label, the space comes from the
+   chrome: a slightly smaller wordmark and a tighter gap between the three groups.
+   Nothing a reader is looking for gets shorter. */
+@media (width < 64rem) {
+  .vk-navbar .vk-navbar__inner {
+    gap: var(--vk-space-3);
+  }
+
+  .vk-navbar .sh-brand__name {
+    font-size: var(--vk-text-md);
+  }
+}
+
+@media (width < 64rem) {
+  .vk-navbar .sh-promo__long,
+  .vk-navbar .sh-navbar__repo-text,
+  .vk-navbar .sh-navlink__long {
+    display: none;
+  }
+
+  .vk-navbar .sh-promo__short,
+  .vk-navbar .sh-navlink__short {
+    display: inline;
+  }
+}
+
+/* Below 23rem there is genuinely no room for a booking button beside the brand, the
+   theme switch and the hamburger. The sheet still offers Reserve, and the hero's own
+   CTA is the first thing under the header. */
+@media (width < 23rem) {
+  .vk-navbar .sh-navbar__cta {
     display: none;
   }
 }
@@ -826,10 +896,13 @@
   min-inline-size: 0;
 }
 
+/* Same reasoning as the clone command: a scroller hid the last 20px of the install
+   line at 768px, with no affordance and no keyboard path to it. */
 :where(.sh-footer__install) > :where(code) {
   min-inline-size: 0;
   max-inline-size: 100%;
-  overflow-x: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
 }
 
 /* --------------------------------------------------------------------------
@@ -878,9 +951,16 @@
 
 :where(.sh-popular__chart) {
   margin-block: var(--vk-space-6) var(--vk-space-4);
-  /* A 13-bar chart needs room. Below this the labels collide, so it scrolls
-     inside itself rather than shrinking into illegibility. */
+  /* A 13-bar chart needs room. Below this the hour labels collide, so it scrolls
+     inside itself rather than shrinking into illegibility — which makes it a
+     scrollable region, and one a keyboard user has to be able to reach. The page
+     gives it `tabindex` and a name; this is the focus ring that goes with them. */
   overflow-x: auto;
+}
+
+:where(.sh-popular__chart:focus-visible) {
+  outline: 2px solid var(--vk-color-ring);
+  outline-offset: 3px;
 }
 
 :where(.sh-popular__chart) > * {
@@ -1135,10 +1215,22 @@
    container hides most of it behind a scrollbar the reader has to discover. Wrapping
    is the better failure: the whole command stays visible and still copies as one line,
    because the copy button reads the string, not the rendered text. */
-:where(.sh-clone[data-size='sm']) :where(.sh-clone__row) > :where(code) {
-  white-space: normal;
+/* Wrap rather than scroll, at both sizes.
+
+   A clone command inside a horizontal scroller is the worst of both worlds: most of it
+   is hidden, there is no affordance saying so, and the scroller is not reachable from a
+   keyboard (WCAG 2.1.1). Wrapping shows the whole command at any width and removes the
+   scroll region entirely. The copy button reads the string, not the rendered text, so
+   what lands on the clipboard is still one line. */
+:where(.sh-clone) :where(.sh-clone__row) > :where(code, pre) {
+  white-space: pre-wrap;
   overflow-wrap: anywhere;
   overflow-x: visible;
+}
+
+:where(.sh-clone) :where(.sh-clone__row) > :where(pre) > :where(code) {
+  white-space: inherit;
+  overflow-wrap: inherit;
 }
 
 :where(.sh-clone[data-size='md']) {
@@ -1169,4 +1261,91 @@
 /* Buttons that carry the GitHub mark beside a word. */
 :where(.vk-button svg) {
   flex: none;
+}
+
+
+/* --------------------------------------------------------------------------
+   22 · Pointer target sizes
+
+   WCAG 2.5.8 asks for 24x24 CSS px. Its "inline" exception covers a link inside a
+   sentence, whose height is set by the surrounding line-height — the phone number in
+   a paragraph is genuinely exempt. A stacked list of navigation links is not: those
+   are targets in their own right, and at the library's default line-height they came
+   out 19px tall. Padding takes them to 27px and widens the gap between them, which
+   also helps the adjacent-target spacing.
+   -------------------------------------------------------------------------- */
+
+:where(.vk-footer__link) {
+  display: inline-block;
+  padding-block: var(--vk-space-1);
+}
+
+/* The wordmark came out 22px tall — two short. */
+:where(.sh-brand) {
+  min-block-size: 24px;
+}
+
+/* The component chips on /built-with are a wrapping set of links, not prose, so the
+   inline exception does not cover them either. They were 21px. */
+:where(.sh-table__components a) {
+  display: inline-flex;
+  align-items: center;
+  min-block-size: 24px;
+}
+
+
+/* --------------------------------------------------------------------------
+   23 · The scrollable table
+
+   The component table on /built-with is wider than a phone. It stays a real table
+   rather than being restyled into cards, because changing `display` on table
+   elements strips their semantics from the accessibility tree — a stacked layout
+   would read better visually and worse to a screen reader.
+
+   So the wrapper scrolls, and the two things a scroller owes the user are added
+   here: a keyboard path into it (`tabindex="0"` on the element, set in the page)
+   and a visible focus ring, plus a note telling sighted users it scrolls.
+   -------------------------------------------------------------------------- */
+
+:where(.sh-table:focus-visible) {
+  outline: 2px solid var(--vk-color-ring);
+  outline-offset: 2px;
+}
+
+:where(.sh-table-hint) {
+  display: none;
+  margin-block-start: var(--vk-space-2);
+  font-size: var(--vk-text-sm);
+  color: var(--vk-color-muted);
+}
+
+/* Only worth saying where the table actually overflows. */
+@media (width < 60rem) {
+  :where(.sh-table-hint) {
+    display: block;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   24 · Menu tabs on a narrow screen
+
+   Four course tabs do not fit across a phone, and the library's default is to
+   scroll them. Scrolling is the right call for a long tab set, but with four
+   items it means the last one sits half-clipped even while it holds focus —
+   arrowing to "Drinks" at 390px selected it correctly and left it cut in half,
+   because a partially visible element does not trigger the browser's own
+   scroll-into-view.
+
+   Wrapping shows all four. `flex-wrap` only takes effect when the row genuinely
+   does not fit, so nothing changes at widths where they already did.
+
+   Deliberately NOT inside :where() — the library's own rule is zero-specificity,
+   so a plain class is the smallest thing that can win.
+   -------------------------------------------------------------------------- */
+
+@media (width < 48rem) {
+  .vk-tabs__list {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
 }
