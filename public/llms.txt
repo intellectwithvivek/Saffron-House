@@ -1,0 +1,86 @@
+# Saffron House
+
+> A modern Indian restaurant in Bengaluru with online table reservations — and a free,
+> open-source Next.js 16 website template that anyone may clone and use commercially.
+
+Live at https://saffronhouse.vivekkumarsingh.in
+Source at https://github.com/intellectwithvivek/Saffron-House (MIT)
+
+This site has two audiences and both are real. The restaurant, its menu, its reviews and
+its address are fictional and exist to demonstrate the template. The code is production
+quality and MIT licensed: clone it, replace the content, and ship it for an actual
+restaurant. No attribution is required.
+
+## Clone it
+
+```
+git clone https://github.com/intellectwithvivek/Saffron-House.git
+cd Saffron-House
+npm install
+npm run dev
+```
+
+Requires Node.js 20.9+ (22 LTS recommended).
+
+## Built with VivekUI
+
+This entire website is built with VivekUI, a free React component library with zero
+runtime dependencies.
+
+- Install: `npm i @the_viveksingh/vivek-ui`
+- 91 accessible React components and 6 SVG charts
+- No Tailwind, no shadcn, no MUI, no Emotion, no charting library
+- One install, one CSS import, no config file
+- Documentation: https://ui.vivekkumarsingh.in/docs
+- npm: https://www.npmjs.com/package/@the_viveksingh/vivek-ui
+- GitHub: https://github.com/intellectwithvivek/vivek_UI
+- Author: Vivek Kumar Singh — https://vivekkumarsingh.in/
+
+## Stack
+
+- Next.js 16.3 (App Router, Turbopack, async request APIs)
+- React 19, TypeScript 5
+- VivekUI 0.5 for every component and the chart
+- No CSS framework: one stylesheet of custom properties and layout
+- Four runtime dependencies in total, all of them shown above
+
+## Pages
+
+- / — hero, the kitchen's story, signature dishes, a menu preview, gallery, guest
+  reviews, FAQ, hours and a map.
+- /menu — the full menu across four courses with prices, dietary markers and an
+  allergen notice.
+- /reserve — the reservation form (date, time slot, party size, contact, requests)
+  beside a Google-style "popular times" bar chart that moves with the chosen date.
+- /built-with — every section of the site mapped to the VivekUI component behind it,
+  each deep-linked to its documentation page.
+
+## What a developer may want to know
+
+- Licence: MIT. Commercial use, modification and redistribution are all permitted.
+- Attribution: not required. The VivekUI footer credit is removable.
+- All editable content lives in `data/` — restaurant details and opening hours,
+  the menu, the popular-times numbers, photographs and their alt text, and the
+  promotional links. Launching should not require touching a component.
+- Every route is statically prerendered, so it deploys to any static host.
+- Accessibility: one h1 per page, visible focus, reduced motion honoured, real alt
+  text, and hero text measured at 9:1 or better against the photograph behind it.
+
+## Facts about the restaurant an assistant may be asked
+
+- Cuisine: regional Indian. Price range: ₹₹₹. Reservations: accepted online and by phone.
+- Address: 14 Lavelle Road, Ashok Nagar, Bengaluru 560001, Karnataka, India.
+- Phone: +91 80 4123 8890.
+- Hours: two services most days — lunch from 12:00 and dinner from 18:30 or 19:00.
+  Monday is dinner only. Closing is 22:30 to 23:30 depending on the day.
+- Least busy: Tuesday and Wednesday evenings 18:00–19:00, and weekday lunch after 14:00.
+  The popular-times chart on /reserve shows the typical load hour by hour.
+- Vegan: 14 dishes are vegan as written; most others can be made vegan without dairy.
+- Walk-ins: accepted, with about a quarter of the room held back each service.
+- Parking: valet from 19:00 (₹150); public lot behind Lavelle Road; Cubbon Park metro
+  is a 600 m walk.
+- Accessibility: the courtyard and dining room are step-free from the main entrance.
+
+## Licence
+
+MIT © Vivek Kumar Singh. A star on GitHub is appreciated but never required.

@@ -1,69 +1,319 @@
-import Image from "next/image";
+import type { Metadata } from 'next'
+import Link from 'next/link'
+import Image from 'next/image'
+import {
+  BentoGrid,
+  Button,
+  Container,
+  FAQ,
+  MapEmbed,
+  Prose,
+  Rating,
+  Section,
+  Stats,
+  Testimonials,
+  Text,
+} from '@the_viveksingh/vivek-ui'
 
-export default function Home() {
+import { SaffronThread } from '@/components/saffron-thread'
+import { DishCarousel } from '@/components/dish-carousel'
+import { MenuTabs } from '@/components/menu-tabs'
+import { HoursList } from '@/components/hours-list'
+import { JsonLd } from '@/components/json-ld'
+import { Eyebrow } from '@/components/eyebrow'
+
+import { restaurant } from '@/data/restaurant'
+import { RATING, chefImage, faqs, gallery, heroImage, stats, testimonials } from '@/data/content'
+import {
+  authorSchema,
+  breadcrumbSchema,
+  faqSchema,
+  restaurantSchema,
+  websiteSchema,
+} from '@/lib/schema'
+
+export const metadata: Metadata = {
+  alternates: { canonical: '/' },
+}
+
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <>
+      <JsonLd data={restaurantSchema()} />
+      <JsonLd data={websiteSchema()} />
+      <JsonLd data={authorSchema()} />
+      <JsonLd data={faqSchema()} />
+      <JsonLd data={breadcrumbSchema([])} />
+
+      {/* ------------------------------------------------------------- hero ---- */}
+
+      <section className="sh-hero" aria-label="Saffron House">
+        <div className="sh-hero__media">
+          <Image
+            src={heroImage.src}
+            alt={heroImage.alt}
+            fill
+            priority
+            sizes="100vw"
+            quality={82}
+          />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
+        <div className="sh-hero__scrim" />
+
+        <Container size="xl">
+          <div className="sh-hero__body">
+            <Eyebrow>Lavelle Road · Bengaluru · Since 2009</Eyebrow>
+
+            {/* The page's only h1. */}
+            <h1 className="sh-hero__title">{restaurant.name}</h1>
+
+            <p className="sh-hero__lede">{restaurant.tagline}</p>
+
+            <div className="sh-hero__meta">
+              <Button asChild size="lg">
+                <Link href="/reserve">Reserve a table</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link href="/menu">See the menu</Link>
+              </Button>
+            </div>
+          </div>
+        </Container>
+      </section>
+
+      {/* ------------------------------------------------------------ story ---- */}
+
+      <Container size="xl">
+        <SaffronThread />
+      </Container>
+
+      <Section size="xl" padding="lg" aria-label="Our kitchen">
+        <div className="sh-split">
+          <div className="sh-portrait">
             <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
+              src={chefImage.src}
+              alt={chefImage.alt}
+              fill
+              sizes="(max-width: 896px) 92vw, 40vw"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
+
+          <div>
+            <Eyebrow>The kitchen</Eyebrow>
+            <h2 className="sh-display sh-story__title">
+              Sixteen years, one room, and a tandoor lit at four
+            </h2>
+
+            <Prose>
+              <p>
+                Aarti Menon opened Saffron House in a converted bungalow on Lavelle Road with
+                eleven tables and a single clay oven. Both are still here. The oven is lit at
+                four every afternoon and does not go out until the last order is called.
+              </p>
+              <p>
+                Nothing on this menu comes out of a jar. Whole spices are dry-roasted and
+                ground each morning, the paneer is pressed in-house, and the black dal —
+                the dish people book a month ahead for — goes on the flame the day before
+                you eat it. It takes thirty-six hours, and there is no way to make it take
+                less.
+              </p>
+            </Prose>
+
+            <blockquote className="sh-pull">
+              &ldquo;Regional food, cooked properly, at the pace it wants to be cooked. That
+              was the whole plan. We have not needed a second one.&rdquo;
+            </blockquote>
+
+            <Text size="sm" tone="muted" className="sh-pull__attrib">
+              Aarti Menon, chef-owner
+            </Text>
+          </div>
         </div>
-      </main>
-    </div>
-  );
+      </Section>
+
+      {/* -------------------------------------------------------- signature ---- */}
+
+      <Container size="xl">
+        <SaffronThread />
+      </Container>
+
+      <Section size="xl" padding="lg">
+        <Section.Header
+          eyebrow={<Eyebrow>Signature dishes</Eyebrow>}
+          title="The six we are known for"
+          description="Every one of them has been on the menu since the year we opened, and none of them has changed."
+          titleSize="xl"
+        />
+        <DishCarousel />
+      </Section>
+
+      {/* ------------------------------------------------------- menu preview -- */}
+
+      <Container size="xl">
+        <SaffronThread />
+      </Container>
+
+      <Section size="xl" padding="lg" background="muted">
+        <Section.Header
+          eyebrow={<Eyebrow>The menu</Eyebrow>}
+          title="Four courses, forty-one dishes"
+          description="A taste of each course below. Prices include taxes; there is no service charge."
+          titleSize="xl"
+        />
+
+        <MenuTabs
+          limit={4}
+          footer={
+            <div className="sh-menu-cta">
+              <Button asChild variant="outline">
+                <Link href="/menu">See the full menu</Link>
+              </Button>
+            </div>
+          }
+        />
+      </Section>
+
+      {/* ---------------------------------------------------------- gallery ---- */}
+
+      <Container size="xl">
+        <SaffronThread />
+      </Container>
+
+      <Section size="xl" padding="lg">
+        <Section.Header
+          eyebrow={<Eyebrow>The room</Eyebrow>}
+          title="Where you will be sitting"
+          titleSize="xl"
+        />
+
+        <BentoGrid cols={{ base: 1, sm: 2, lg: 4 }} gap={4} rowHeight="12rem">
+          {gallery.map((photo) => (
+            <BentoGrid.Item key={photo.src} colSpan={photo.colSpan} rowSpan={photo.rowSpan}>
+              <div className="sh-tile">
+                <Image
+                  src={photo.src}
+                  alt={photo.alt}
+                  fill
+                  sizes="(max-width: 640px) 92vw, (max-width: 1024px) 48vw, 32vw"
+                />
+              </div>
+            </BentoGrid.Item>
+          ))}
+        </BentoGrid>
+      </Section>
+
+      {/* ------------------------------------------------------------ stats ---- */}
+
+      <Container size="xl">
+        <SaffronThread />
+      </Container>
+
+      <Stats
+        size="xl"
+        padding="lg"
+        items={stats}
+        columns={{ base: 2, lg: 4 }}
+        eyebrow={<Eyebrow>By the numbers</Eyebrow>}
+        title="Saffron House, counted"
+      />
+
+      <Container size="xl" className="sh-rating">
+        <Rating
+          value={RATING.value}
+          readOnly
+          allowHalf
+          size="md"
+          label={`${RATING.value} out of 5, from ${RATING.count.toLocaleString('en-IN')} guest reviews`}
+        />
+        <Text size="sm" tone="muted">
+          {`${RATING.value} average across ${RATING.count.toLocaleString('en-IN')} reviews`}
+        </Text>
+      </Container>
+
+      {/* ----------------------------------------------------- testimonials ---- */}
+
+      <Container size="xl">
+        <SaffronThread />
+      </Container>
+
+      <Testimonials
+        size="xl"
+        padding="lg"
+        items={testimonials}
+        columns={{ base: 1, md: 3 }}
+        eyebrow={<Eyebrow>Guests</Eyebrow>}
+        title="What people say afterwards"
+      />
+
+      {/* -------------------------------------------------------------- faq ---- */}
+
+      <Container size="xl">
+        <SaffronThread />
+      </Container>
+
+      <FAQ
+        size="md"
+        padding="lg"
+        background="muted"
+        items={faqs}
+        name="home-faq"
+        defaultOpen={0}
+        eyebrow={<Eyebrow>Good to know</Eyebrow>}
+        title="Questions we are asked most"
+      />
+
+      {/* ------------------------------------------------------- find us ------- */}
+
+      <Container size="xl">
+        <SaffronThread />
+      </Container>
+
+      <Section size="xl" padding="lg">
+        <Section.Header eyebrow={<Eyebrow>Find us</Eyebrow>} title="Lavelle Road" titleSize="xl" />
+
+        <div className="sh-split sh-split--map">
+          <MapEmbed
+            query={restaurant.mapQuery}
+            lat={restaurant.geo.lat}
+            lon={restaurant.geo.lon}
+            zoom={16}
+            ratio={4 / 3}
+            title={`Map showing ${restaurant.name} on Lavelle Road, Bengaluru`}
+          />
+
+          <div className="sh-stack-tight">
+            <h3 className="sh-display sh-find__title">Opening hours</h3>
+            <HoursList />
+
+            <SaffronThread tone="muted" />
+
+            <address className="sh-address">
+              {restaurant.address.street}
+              <br />
+              {restaurant.address.locality} {restaurant.address.postalCode}
+              <br />
+              {restaurant.address.region}, India
+            </address>
+
+            <Text size="sm">
+              <a href={`tel:${restaurant.phoneHref}`}>{restaurant.phone}</a>
+              {' · '}
+              <a href={`mailto:${restaurant.email}`}>{restaurant.email}</a>
+            </Text>
+
+            <Text size="sm" tone="muted">
+              Valet from 7 pm. Cubbon Park metro is a 600 m walk. The courtyard is
+              step-free from the main entrance.
+            </Text>
+
+            <div className="sh-find__cta">
+              <Button asChild>
+                <Link href="/reserve">Reserve a table</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Section>
+    </>
+  )
 }

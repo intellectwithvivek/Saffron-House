@@ -1,26 +1,1172 @@
-@import "tailwindcss";
+/* ==========================================================================
+   Saffron House — the only stylesheet in the project.
+
+   Everything structural comes from VivekUI. This file does three things and
+   nothing else:
+
+   1. Re-points the VivekUI colour tokens at a Rose accent, in both themes.
+   2. Defines the saffron-thread ornament — the site's one repeated motif.
+   3. Adds the handful of layouts VivekUI has no primitive for (the hero
+      overlay, the dotted menu leader, the reservation two-column).
+
+   Selectors are wrapped in :where() so every rule lands at zero specificity
+   and a VivekUI class always wins. There is no !important anywhere.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1 · Tokens
+   -------------------------------------------------------------------------- */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* --- The Rose accent, replacing VivekUI's default blue. --------------- */
+  --vk-color-primary: #be123c;
+  --vk-color-primary-fg: #fff;
+  --vk-color-primary-hover: #a10f33;
+  --vk-color-primary-active: #881029;
+  --vk-color-primary-subtle: #fff1f3;
+  --vk-color-primary-subtle-fg: #9f1239;
+  --vk-color-ring: #be123c;
+
+  /* Warm the neutrals a couple of degrees. A restaurant should not be grey. */
+  --vk-color-bg: #fffcfa;
+  --vk-color-surface: #fff;
+  --vk-color-surface-subtle: #faf4f1;
+  --vk-color-surface-sunken: #f3ebe7;
+  --vk-color-border-subtle: #f6eeea;
+  --vk-color-border: #ebdfd9;
+
+  /* --- The saffron motif. Deliberately NOT the accent. ------------------
+     Rose is the interface colour: buttons, links, focus rings. Saffron is
+     the brand's ornament and appears only in the divider and the wordmark,
+     which is what keeps one motif from turning into a second theme. */
+  --sh-saffron: #e8871e;
+  --sh-saffron-soft: #f0b357;
+  --sh-thread-line: #e4d3c6;
+
+  /* Chart palette: the popular-times bars read as one colour, not six. */
+  --vk-chart-1: #be123c;
+  --vk-chart-2: #e8871e;
+
+  /* Fraunces, loaded by next/font in the root layout. The fallback chain matters:
+     it is what renders during `font-display: swap`, so it is a serif too. */
+  --sh-font-display: var(--font-display), 'Iowan Old Style', 'Palatino Linotype', Palatino,
+    Georgia, 'Times New Roman', serif;
+  /* Space-separated, NOT comma-separated. This feeds `rgb(var(--sh-hero-scrim) / .9)`,
+     and `rgb(12, 8, 10 / .9)` — legacy commas with a modern slash alpha — is invalid
+     CSS: the browser drops the whole declaration silently. Every scrim, shadow and
+     button fill on the hero depends on this one line parsing. */
+  --sh-hero-scrim: 12 8 10;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root[data-theme='dark'] {
+  --vk-color-primary: #fb7185;
+  --vk-color-primary-fg: #1a0a0e;
+  --vk-color-primary-hover: #fda4af;
+  --vk-color-primary-active: #f43f5e;
+  --vk-color-primary-subtle: #4c0519;
+  --vk-color-primary-subtle-fg: #fecdd3;
+  --vk-color-ring: #fb7185;
+
+  --vk-color-bg: #100c0e;
+  --vk-color-surface: #1a1517;
+  --vk-color-surface-subtle: #211a1d;
+  --vk-color-surface-sunken: #0b0809;
+  --vk-color-border-subtle: #241d20;
+  --vk-color-border: #322829;
+
+  --sh-saffron: #f5a742;
+  --sh-saffron-soft: #d98b2b;
+  --sh-thread-line: #3a2e2c;
+
+  --vk-chart-1: #fb7185;
+  --vk-chart-2: #f5a742;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* --------------------------------------------------------------------------
+   2 · Base
+   -------------------------------------------------------------------------- */
+
+:where(html) {
+  scroll-behavior: smooth;
+}
+
+:where(body) {
+  background: var(--vk-color-bg);
+  color: var(--vk-color-fg);
+  font-family: var(--vk-font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* The display face, on the things that carry the brand and nowhere else. */
+:where(.sh-display) {
+  font-family: var(--sh-font-display);
+  font-weight: 600;
+  letter-spacing: var(--vk-tracking-tight);
+}
+
+/* Skip link: visible the moment it takes focus, off-screen otherwise. */
+:where(.sh-skip) {
+  position: fixed;
+  inset-inline-start: var(--vk-space-4);
+  inset-block-start: -4rem;
+  z-index: 100;
+  padding: var(--vk-space-3) var(--vk-space-4);
+  border-radius: var(--vk-radius-md);
+  background: var(--vk-color-primary);
+  color: var(--vk-color-primary-fg);
+  font-size: var(--vk-text-sm);
+  font-weight: var(--vk-weight-semibold);
+  text-decoration: none;
+  transition: inset-block-start 120ms ease;
+}
+
+:where(.sh-skip:focus-visible) {
+  inset-block-start: var(--vk-space-4);
+}
+
+/* --------------------------------------------------------------------------
+   3 · The saffron thread — the signature element
+
+   Three tapered strokes of saffron on a hairline that fades out both ways.
+   One element and one pseudo-element: the outer two strokes are box-shadow
+   copies of the middle one, offset down a little so the group reads as a
+   crocus stigma rather than a row of ticks.
+   -------------------------------------------------------------------------- */
+
+:where(.sh-thread) {
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-4);
+  margin-block: var(--vk-space-2);
+  color: var(--sh-saffron);
+}
+
+:where(.sh-thread)::before,
+:where(.sh-thread)::after {
+  content: '';
+  flex: 1;
+  block-size: 1px;
+  background: linear-gradient(to right, transparent, var(--sh-thread-line) 35%, var(--sh-thread-line) 65%, transparent);
+}
+
+:where(.sh-thread__mark) {
+  position: relative;
+  flex: none;
+  inline-size: 15px;
+  block-size: 12px;
+}
+
+:where(.sh-thread__mark)::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 6.5px;
+  inline-size: 2px;
+  block-size: 12px;
+  border-radius: 1px;
+  background: linear-gradient(to bottom, var(--sh-saffron-soft), var(--sh-saffron));
+  box-shadow:
+    -6px 3px 0 -0.5px var(--sh-saffron),
+    6px 3px 0 -0.5px var(--sh-saffron);
+}
+
+/* The quieter variant, for inside a card where a full rule would be too loud. */
+:where(.sh-thread[data-tone='muted'])::before,
+:where(.sh-thread[data-tone='muted'])::after {
+  background: none;
+}
+
+/* --------------------------------------------------------------------------
+   4 · Hero
+   -------------------------------------------------------------------------- */
+
+:where(.sh-hero) {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  align-items: end;
+  min-block-size: min(84svh, 46rem);
+  overflow: hidden;
+  background: var(--vk-color-surface-sunken);
+}
+
+:where(.sh-hero__media) {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+}
+
+:where(.sh-hero__media img) {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  object-position: center 60%;
+}
+
+/* Two stops, weighted to the bottom, so the type sits on near-solid ground
+   while the top of the photograph stays a photograph. */
+/* The hero scrim.
+
+   A full-frame wash strong enough for AA text is also strong enough to kill the
+   photograph — the room stops being visible, which defeats the point of putting a
+   photograph there. So the scrim is shaped to the text instead of the frame.
+
+   Narrow screens get a vertical gradient, because the copy runs the full width and
+   there is no clean side to protect. Wide screens get a horizontal one: the text lives
+   in a left column, so the left half is taken down hard and the right half — the part
+   with the room in it — is left almost untouched.
+
+   The switch happens at 64rem rather than at the tablet breakpoint you would expect.
+   Between 48 and 64rem the display title still spans about 60% of the viewport, which
+   runs its right-hand end out past the dark side of the horizontal gradient; measured
+   at 768px that put the title at 2.82:1 against 3.0 required. The vertical scrim covers
+   that band instead.
+
+   The stop positions are not decorative. On the wide gradient the 52% stop is where the
+   longest line of text ends, and on the narrow one the 64% stop is where the eyebrow
+   sits. Both were set by measuring the worst-case pixel under each run of text. */
+:where(.sh-hero__scrim) {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(
+      to top,
+      rgb(var(--sh-hero-scrim) / 0.95) 0%,
+      rgb(var(--sh-hero-scrim) / 0.9) 58%,
+      rgb(var(--sh-hero-scrim) / 0.45) 82%,
+      rgb(var(--sh-hero-scrim) / 0.2) 100%
+    ),
+    rgb(var(--sh-hero-scrim) / 0.22);
+}
+
+@media (width >= 64rem) {
+  :where(.sh-hero__scrim) {
+    background:
+      /* Grounds the buttons at the very bottom. */
+      linear-gradient(
+        to top,
+        rgb(var(--sh-hero-scrim) / 0.45) 0%,
+        rgb(var(--sh-hero-scrim) / 0.15) 34%,
+        rgb(var(--sh-hero-scrim) / 0) 62%
+      ),
+      /* The column the type sits in. */
+      linear-gradient(
+        to right,
+        rgb(var(--sh-hero-scrim) / 0.94) 0%,
+        rgb(var(--sh-hero-scrim) / 0.9) 52%,
+        rgb(var(--sh-hero-scrim) / 0.45) 68%,
+        rgb(var(--sh-hero-scrim) / 0.06) 84%,
+        rgb(var(--sh-hero-scrim) / 0) 100%
+      ),
+      /* Just enough overall to keep it an evening. */
+      rgb(var(--sh-hero-scrim) / 0.14);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+:where(.sh-hero__body) {
+  padding-block: var(--vk-space-20) var(--vk-space-16);
+  color: #fff;
+  max-inline-size: 46rem;
+}
+
+:where(.sh-hero__title) {
+  font-family: var(--sh-font-display);
+  font-size: clamp(2.75rem, 9vw, 5.5rem);
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  margin-block: var(--vk-space-4) var(--vk-space-5);
+  text-wrap: balance;
+}
+
+/* Small caps eyebrow, tracked wide — the one place the site shouts. */
+:where(.sh-eyebrow) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vk-space-2);
+  font-size: var(--vk-text-xs);
+  font-weight: var(--vk-weight-semibold);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--sh-saffron);
+}
+
+/* Small text over a photograph needs 4.5:1. Two changes get the eyebrow there: the
+   lighter saffron tint, and the scrim above, which is why its 42% stop sits at 0.9 —
+   that stop exists for this line of text and nothing else.
+
+   Measured against the brightest frame in the set, this pairing lands near 7:1. The
+   shadow is not part of that calculation; it is there so the letterforms keep their
+   edges over a busy background, which contrast ratio does not describe. */
+:where(.sh-hero__body .sh-eyebrow) {
+  color: var(--sh-saffron-soft);
+  text-shadow: 0 1px 3px rgb(var(--sh-hero-scrim) / 0.9);
+}
+
+:where(.sh-hero__lede) {
+  font-size: clamp(1.0625rem, 2.2vw, 1.375rem);
+  line-height: var(--vk-leading-snug);
+  color: rgb(255 255 255 / 0.86);
+  max-inline-size: 34rem;
+  text-wrap: pretty;
+}
+
+/* On a photograph, a transparent outline button is a coin toss. Give it its own
+   dark fill and a solid white edge so it reads on any frame. */
+:where(.sh-hero__meta .vk-button[data-variant='outline']) {
+  background: rgb(var(--sh-hero-scrim) / 0.55);
+  border-color: rgb(255 255 255 / 0.7);
+  color: #fff;
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+}
+
+:where(.sh-hero__meta .vk-button[data-variant='outline']:hover) {
+  background: rgb(var(--sh-hero-scrim) / 0.75);
+  border-color: #fff;
+}
+
+:where(.sh-hero__meta) {
+  margin-block-start: var(--vk-space-8);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vk-space-3) var(--vk-space-6);
+  font-size: var(--vk-text-sm);
+  color: rgb(255 255 255 / 0.72);
+}
+
+/* --------------------------------------------------------------------------
+   5 · Editorial blocks
+   -------------------------------------------------------------------------- */
+
+:where(.sh-split) {
+  display: grid;
+  gap: var(--vk-space-12);
+  align-items: center;
+}
+
+@media (width >= 56rem) {
+  :where(.sh-split) {
+    grid-template-columns: 5fr 6fr;
+    gap: var(--vk-space-16);
+  }
+}
+
+:where(.sh-portrait) {
+  position: relative;
+  border-radius: var(--vk-radius-lg);
+  overflow: hidden;
+  background: var(--vk-color-surface-subtle);
+  aspect-ratio: 5 / 6;
+}
+
+:where(.sh-portrait img) {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+}
+
+/* A pull-quote set in the display face, used once on the homepage. */
+:where(.sh-pull) {
+  font-family: var(--sh-font-display);
+  font-size: clamp(1.375rem, 3vw, 1.875rem);
+  line-height: var(--vk-leading-snug);
+  letter-spacing: var(--vk-tracking-tight);
+  border-inline-start: 2px solid var(--sh-saffron);
+  padding-inline-start: var(--vk-space-5);
+  margin: 0;
+  text-wrap: pretty;
+}
+
+/* --------------------------------------------------------------------------
+   6 · Dishes
+   -------------------------------------------------------------------------- */
+
+:where(.sh-dish) {
+  block-size: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+:where(.sh-dish__media) {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border-radius: var(--vk-radius-md);
+  background: var(--vk-color-surface-subtle);
+  margin-block-end: var(--vk-space-4);
+}
+
+:where(.sh-dish__media img) {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  transition: transform 600ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:where(.sh-dish:hover .sh-dish__media img) {
+  transform: scale(1.04);
+}
+
+:where(.sh-dish__price) {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--vk-weight-semibold);
+  color: var(--vk-color-primary);
+  white-space: nowrap;
+}
+
+/* --- The dotted leader. A printed-menu convention, and the fastest way to
+       tie a dish name to its price across a wide column. ----------------- */
+
+:where(.sh-item) {
+  display: grid;
+  gap: var(--vk-space-1) var(--vk-space-3);
+  grid-template-columns: 1fr auto;
+  padding-block: var(--vk-space-5);
+  border-block-end: 1px solid var(--vk-color-border-subtle);
+}
+
+:where(.sh-item:last-child) {
+  border-block-end: 0;
+}
+
+:where(.sh-item__head) {
+  display: flex;
+  align-items: baseline;
+  gap: var(--vk-space-2);
+  grid-column: 1 / -1;
+}
+
+:where(.sh-item__leader) {
+  flex: 1;
+  min-inline-size: var(--vk-space-6);
+  border-block-end: 1px dotted var(--vk-color-border);
+  transform: translateY(-0.2em);
+}
+
+:where(.sh-item__name) {
+  font-family: var(--sh-font-display);
+  font-size: var(--vk-text-lg);
+  font-weight: 600;
+  letter-spacing: var(--vk-tracking-snug);
+}
+
+:where(.sh-item__body) {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vk-space-2) var(--vk-space-4);
+}
+
+/* --------------------------------------------------------------------------
+   7 · Gallery
+   -------------------------------------------------------------------------- */
+
+:where(.sh-tile) {
+  position: relative;
+  block-size: 100%;
+  overflow: hidden;
+  border-radius: var(--vk-radius-md);
+  background: var(--vk-color-surface-subtle);
+}
+
+:where(.sh-tile img) {
+  inline-size: 100%;
+  block-size: 100%;
+  object-fit: cover;
+  transition: transform 700ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+:where(.sh-tile:hover img) {
+  transform: scale(1.05);
+}
+
+/* --------------------------------------------------------------------------
+   8 · Reservations
+   -------------------------------------------------------------------------- */
+
+:where(.sh-reserve) {
+  display: grid;
+  gap: var(--vk-space-8);
+  align-items: start;
+}
+
+@media (width >= 62rem) {
+  :where(.sh-reserve) {
+    grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+    gap: var(--vk-space-10);
+  }
+
+  /* The chart is reference material, so it sticks while the form scrolls. */
+  :where(.sh-reserve__aside) {
+    position: sticky;
+    inset-block-start: var(--vk-space-6);
+  }
+}
+
+:where(.sh-field-row) {
+  display: grid;
+  gap: var(--vk-space-4);
+}
+
+@media (width >= 34rem) {
+  :where(.sh-field-row) {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* A tidy two-column read-back of the booking inside the confirm dialog. */
+:where(.sh-summary) {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: var(--vk-space-3) var(--vk-space-6);
+  margin: 0;
+  font-size: var(--vk-text-sm);
+}
+
+:where(.sh-summary dt) {
+  color: var(--vk-color-muted);
+}
+
+:where(.sh-summary dd) {
+  margin: 0;
+  font-weight: var(--vk-weight-medium);
+}
+
+/* --------------------------------------------------------------------------
+   9 · Hours list
+   -------------------------------------------------------------------------- */
+
+:where(.sh-hours) {
+  display: grid;
+  gap: var(--vk-space-1);
+  margin: 0;
+  font-size: var(--vk-text-sm);
+}
+
+:where(.sh-hours__row) {
+  display: flex;
+  align-items: baseline;
+  gap: var(--vk-space-3);
+  padding-block: var(--vk-space-2);
+  border-block-end: 1px solid var(--vk-color-border-subtle);
+}
+
+:where(.sh-hours__row:last-child) {
+  border-block-end: 0;
+}
+
+:where(.sh-hours__row[data-today='true']) {
+  color: var(--vk-color-primary);
+  font-weight: var(--vk-weight-semibold);
+}
+
+:where(.sh-hours__day) {
+  min-inline-size: 3.25rem;
+}
+
+:where(.sh-hours__dots) {
+  flex: 1;
+  border-block-end: 1px dotted var(--vk-color-border);
+  transform: translateY(-0.25em);
+}
+
+:where(.sh-hours__time) {
+  font-variant-numeric: tabular-nums;
+}
+
+/* --------------------------------------------------------------------------
+   10 · Utilities
+   -------------------------------------------------------------------------- */
+
+:where(.sh-stack-tight) > * + * {
+  margin-block-start: var(--vk-space-3);
+}
+
+:where(.sh-muted-panel) {
+  background: var(--vk-color-surface-subtle);
+  border: 1px solid var(--vk-color-border-subtle);
+  border-radius: var(--vk-radius-lg);
+  padding: var(--vk-space-6);
+}
+
+:where(.sh-center) {
+  text-align: center;
+  margin-inline: auto;
+}
+
+:where(.sh-measure) {
+  max-inline-size: 42rem;
+}
+
+/* The chart caption. Small, muted, and never the only place a fact appears. */
+:where(.sh-caption) {
+  font-size: var(--vk-text-sm);
+  color: var(--vk-color-muted);
+  text-wrap: pretty;
+}
+
+/* --------------------------------------------------------------------------
+   11 · Motion
+
+   Everything above that moves does so on hover only, and every transition is
+   a transform or an opacity. This turns the lot off in one place.
+   -------------------------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  :where(html) {
+    scroll-behavior: auto;
+  }
+
+  :where(*, *::before, *::after) {
+    animation-duration: 0.01ms;
+    animation-iteration-count: 1;
+    transition-duration: 0.01ms;
+  }
+
+  :where(.sh-dish:hover .sh-dish__media img),
+  :where(.sh-tile:hover img) {
+    transform: none;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   12 · Header and brand
+   -------------------------------------------------------------------------- */
+
+:where(.sh-navbar) {
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  background: color-mix(in oklab, var(--vk-color-bg) 86%, transparent);
+}
+
+:where(.sh-brand) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vk-space-3);
+  text-decoration: none;
+  color: inherit;
+}
+
+/* A single saffron thread, borrowed from the divider, standing in for a logo. */
+:where(.sh-brand__mark) {
+  position: relative;
+  flex: none;
+  inline-size: 15px;
+  block-size: 14px;
+  color: var(--sh-saffron);
+}
+
+:where(.sh-brand__mark)::before {
+  content: '';
+  position: absolute;
+  inset-block-start: 1px;
+  inset-inline-start: 6.5px;
+  inline-size: 2px;
+  block-size: 13px;
+  border-radius: 1px;
+  background: linear-gradient(to bottom, var(--sh-saffron-soft), var(--sh-saffron));
+  box-shadow:
+    -6px 3px 0 -0.5px var(--sh-saffron),
+    6px 3px 0 -0.5px var(--sh-saffron);
+}
+
+:where(.sh-brand__name) {
+  font-size: var(--vk-text-lg);
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+:where(.sh-navbar__promo) {
+  text-decoration: none;
+}
+
+/* --- The open/closed badge and clock. -------------------------------------
+   Two copies exist: one in the header row for wide viewports and one inside
+   the collapsed sheet, because the header row genuinely has no space for it
+   next to a CTA on a phone. Only ever one is displayed. */
+
+:where(.sh-navbar__status) {
+  display: none;
+}
+
+/* The sheet copies must disappear the moment the links stop being a sheet.
+
+   VivekUI collapses the navbar with a container query at 48rem, so from that width the
+   links are an inline row — and anything parked in that list for the sheet is suddenly
+   sitting in the header bar. The status block is 196px wide, which is what pushed the
+   768–1023px header 151px past the viewport. It hides with the sheet.
+
+   The full status then reappears in the actions area at 68rem, where there is finally
+   room for it beside everything else. Between 48 and 68rem the header carries no
+   open/closed badge: the hero, the footer and /reserve all still state the hours, and a
+   header that overflows is a worse answer than a header that shows one thing less. */
+@media (width >= 48rem) {
+  :where(.sh-navbar__status-mobile) {
+    display: none;
+  }
+}
+
+@media (width >= 68rem) {
+  :where(.sh-navbar__status) {
+    display: inline-flex;
+  }
+}
+
+/* --- The repository link, same dual placement as the badge above. -------------
+   Not wrapped in :where(): `.vk-button` sets `display: inline-flex`, which beats a
+   zero-specificity `display: none` and would leave the button visible on a phone
+   header that has no room for it. Qualifying with the parent gives 0-2-0. */
+
+.vk-navbar .sh-navbar__repo {
+  display: none;
+  gap: var(--vk-space-2);
+}
+
+@media (width >= 48rem) {
+  .vk-navbar .sh-navbar__repo {
+    display: inline-flex;
+  }
+
+  .vk-navbar .sh-navbar__repo-mobile {
+    display: none;
+  }
+}
+
+:where(.sh-navbar__repo-mobile-inner) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vk-space-2);
+}
+
+:where(.sh-navbar__status-mobile) {
+  padding-block: var(--vk-space-2);
+}
+
+:where(.sh-status) {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--vk-space-3);
+}
+
+:where(.sh-status__dot) {
+  inline-size: 6px;
+  block-size: 6px;
+  border-radius: var(--vk-radius-full);
+  background: var(--vk-color-muted);
+  margin-inline-end: var(--vk-space-1);
+}
+
+:where(.sh-status__dot[data-open='true']) {
+  background: var(--vk-color-success);
+}
+
+:where(.sh-status__clock) {
+  font-size: var(--vk-text-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--vk-color-muted);
+}
+
+/* Responsive CTA label.
+
+   Note these are NOT wrapped in :where(). Everything else in this file is, so a
+   VivekUI class always wins — but `display` is the one property where that rule
+   backfires: `.vk-button` sets `display: inline-flex`, which beats a zero-specificity
+   `display: none` and left this button visible at every width. Qualifying with the
+   parent gets a 0-2-0 selector, which wins honestly, without !important. */
+.vk-navbar .sh-cta__short {
+  display: none;
+}
+
+/* Measured, not guessed: at 768px the bar needs 675px of its 768 with the short label
+   and 722 with the long one. The long label comes back at 64rem, where the inline link
+   row and the actions together leave 300px spare. */
+@media (width < 64rem) {
+  .vk-navbar .sh-cta__long {
+    display: none;
+  }
+
+  .vk-navbar .sh-cta__short {
+    display: inline;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   13 · Footer
+   -------------------------------------------------------------------------- */
+
+:where(.sh-footer__brand) {
+  display: grid;
+  gap: var(--vk-space-4);
+  max-inline-size: 26rem;
+  min-inline-size: 0;
+}
+
+:where(.sh-footer__wordmark) {
+  font-size: var(--vk-text-xl);
+}
+
+:where(.sh-footer__thread) {
+  margin-block: 0;
+}
+
+:where(.sh-footer__blurb) {
+  text-wrap: pretty;
+}
+
+:where(.sh-footer__install) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vk-space-2);
+  min-inline-size: 0;
+}
+
+:where(.sh-footer__install) > :where(code) {
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  overflow-x: auto;
+}
+
+/* --------------------------------------------------------------------------
+   14 · Menu
+   -------------------------------------------------------------------------- */
+
+:where(.sh-item-list) {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+:where(.sh-item__diet) {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--vk-space-2);
+}
+
+:where(.sh-course-blurb) {
+  margin-block: var(--vk-space-6) var(--vk-space-2);
+}
+
+:where(.sh-course-more) {
+  display: block;
+  margin-block-start: var(--vk-space-5);
+}
+
+:where(.sh-dish__copy) {
+  margin-block-start: var(--vk-space-2);
+}
+
+:where(.sh-dish__diet) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vk-space-2);
+}
+
+/* --------------------------------------------------------------------------
+   15 · Popular times
+   -------------------------------------------------------------------------- */
+
+:where(.sh-popular__head) {
+  display: grid;
+  gap: var(--vk-space-2);
+}
+
+:where(.sh-popular__chart) {
+  margin-block: var(--vk-space-6) var(--vk-space-4);
+  /* A 13-bar chart needs room. Below this the labels collide, so it scrolls
+     inside itself rather than shrinking into illegibility. */
+  overflow-x: auto;
+}
+
+:where(.sh-popular__chart) > * {
+  min-inline-size: 20rem;
+}
+
+:where(.sh-popular__facts) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vk-space-2);
+}
+
+/* --------------------------------------------------------------------------
+   16 · Reservation form
+   -------------------------------------------------------------------------- */
+
+:where(.sh-reserve__title) {
+  font-family: var(--sh-font-display);
+  font-size: var(--vk-text-2xl);
+  font-weight: 600;
+  line-height: var(--vk-leading-tight);
+  letter-spacing: var(--vk-tracking-tight);
+  margin-block: var(--vk-space-2) var(--vk-space-1);
+}
+
+:where(.sh-reserve__subtitle) {
+  font-size: var(--vk-text-md);
+  font-weight: var(--vk-weight-semibold);
+  margin-block-end: var(--vk-space-5);
+}
+
+:where(.sh-form) {
+  display: grid;
+  gap: var(--vk-space-5);
+}
+
+:where(.sh-reserve__actions) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vk-space-3);
+}
+
+:where(.sh-summary__note) {
+  margin-block-start: var(--vk-space-5);
+}
+
+:where(.sh-hours__badge) {
+  font-weight: var(--vk-weight-normal);
+}
+
+/* --------------------------------------------------------------------------
+   17 · Page furniture
+   -------------------------------------------------------------------------- */
+
+:where(.sh-page__title) {
+  font-size: clamp(2rem, 5.5vw, 3.25rem);
+  line-height: var(--vk-leading-tight);
+  letter-spacing: -0.02em;
+  margin-block: var(--vk-space-3) var(--vk-space-5);
+  text-wrap: balance;
+}
+
+:where(.sh-page__head) {
+  display: grid;
+  gap: 0;
+}
+
+:where(.sh-story__title) {
+  font-size: clamp(1.75rem, 4vw, 2.5rem);
+  line-height: var(--vk-leading-tight);
+  margin-block: var(--vk-space-3) var(--vk-space-6);
+  text-wrap: balance;
+}
+
+:where(.sh-pull) {
+  margin-block-start: var(--vk-space-8);
+}
+
+:where(.sh-pull__attrib) {
+  margin-block-start: var(--vk-space-3);
+  padding-inline-start: var(--vk-space-5);
+}
+
+:where(.sh-lede) {
+  margin-block: var(--vk-space-2) var(--vk-space-5);
+  text-wrap: pretty;
+}
+
+/* --------------------------------------------------------------------------
+   18 · Homepage bands
+   -------------------------------------------------------------------------- */
+
+:where(.sh-menu-cta) {
+  margin-block-start: var(--vk-space-8);
+}
+
+:where(.sh-split--map) {
+  align-items: start;
+}
+
+@media (width >= 56rem) {
+  :where(.sh-split--map) {
+    grid-template-columns: 3fr 2fr;
+  }
+}
+
+:where(.sh-find__title) {
+  font-size: var(--vk-text-xl);
+  margin-block-end: var(--vk-space-4);
+}
+
+:where(.sh-address) {
+  font-style: normal;
+  line-height: var(--vk-leading-relaxed);
+}
+
+:where(.sh-find__cta) {
+  margin-block-start: var(--vk-space-6);
+}
+
+:where(.sh-rating) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--vk-space-3);
+}
+
+/* --------------------------------------------------------------------------
+   19 · Menu page
+   -------------------------------------------------------------------------- */
+
+:where(.sh-legend) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vk-space-2);
+  margin-block: var(--vk-space-6) 0;
+}
+
+:where(.sh-menu-full) {
+  margin-block-start: var(--vk-space-8);
+}
+
+/* --------------------------------------------------------------------------
+   20 · Built-with page
+   -------------------------------------------------------------------------- */
+
+:where(.sh-install) {
+  display: grid;
+  gap: var(--vk-space-3);
+  justify-items: start;
+  margin-block: var(--vk-space-8) var(--vk-space-6);
+  max-inline-size: 32rem;
+}
+
+:where(.sh-install pre) {
+  inline-size: 100%;
+}
+
+:where(.sh-badges) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vk-space-2);
+}
+
+:where(.sh-table) {
+  margin-block: var(--vk-space-8);
+}
+
+/* Component names wrap as a set of chips rather than a run-on line. */
+:where(.sh-table__components) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vk-space-2);
+}
+
+:where(.sh-table__components a) {
+  text-decoration: none;
+}
+
+:where(.sh-table__components a:hover code),
+:where(.sh-table__components a:focus-visible code) {
+  color: var(--vk-color-primary);
+  border-color: var(--vk-color-primary);
+}
+
+:where(.sh-cta-row) {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--vk-space-3);
+  margin-block: var(--vk-space-8) var(--vk-space-6);
+}
+
+/* The panel under the popular-times chart, filling what would otherwise be an empty
+   half-column beside a tall form. */
+:where(.sh-aside-note) {
+  margin-block-start: var(--vk-space-5);
+  display: grid;
+  gap: var(--vk-space-2);
+  border: 1px dashed var(--vk-color-border);
+  border-radius: var(--vk-radius-lg);
+}
+
+
+/* --------------------------------------------------------------------------
+   21 · Clone this template
+
+   The command is content, not chrome: it is the reason the site is public. It
+   gets a panel of its own rather than a link buried in a list.
+   -------------------------------------------------------------------------- */
+
+/* `min-inline-size: 0` all the way down, and it is not optional.
+
+   A grid or flex item defaults to `min-width: auto`, which means "never shrink below
+   your content". The clone command is a single unbreakable token, so without this the
+   whole chain — footer brand, clone block, row, code — is forced to the command's full
+   width and pushes the page sideways on a phone. Each level has to opt out; setting it
+   only on the code element does nothing, because the ancestors have already claimed
+   the space. */
+
+:where(.sh-clone) {
+  display: grid;
+  gap: var(--vk-space-2);
+  min-inline-size: 0;
+}
+
+:where(.sh-clone__label) {
+  display: flex;
+  align-items: center;
+  gap: var(--vk-space-2);
+}
+
+:where(.sh-clone__row) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--vk-space-2);
+  min-inline-size: 0;
+}
+
+/* The command scrolls inside its own box rather than widening the page. */
+:where(.sh-clone__row) > :where(pre, code) {
+  flex: 1 1 14rem;
+  min-inline-size: 0;
+  max-inline-size: 100%;
+  margin: 0;
+  overflow-x: auto;
+}
+
+/* In the narrow footer column the command is wider than the space, and a scroll
+   container hides most of it behind a scrollbar the reader has to discover. Wrapping
+   is the better failure: the whole command stays visible and still copies as one line,
+   because the copy button reads the string, not the rendered text. */
+:where(.sh-clone[data-size='sm']) :where(.sh-clone__row) > :where(code) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  overflow-x: visible;
+}
+
+:where(.sh-clone[data-size='md']) {
+  padding: var(--vk-space-6);
+  border: 1px solid var(--vk-color-border);
+  border-radius: var(--vk-radius-lg);
+  background: var(--vk-color-surface-subtle);
+  margin-block: var(--vk-space-6);
+}
+
+:where(.sh-footer__clone) {
+  display: grid;
+  gap: var(--vk-space-4);
+  min-inline-size: 0;
+}
+
+:where(.sh-footer__repo-actions) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--vk-space-2);
+}
+
+:where(.sh-footer__legal) {
+  display: block;
+  max-inline-size: 60rem;
+}
+
+/* Buttons that carry the GitHub mark beside a word. */
+:where(.vk-button svg) {
+  flex: none;
 }
