@@ -257,7 +257,7 @@ export default function HomePage() {
         background="muted"
         items={faqs}
         name="home-faq"
-        defaultOpen={0}
+        defaultOpenIndex={0}
         eyebrow={<Eyebrow>Good to know</Eyebrow>}
         title="Questions we are asked most"
       />
